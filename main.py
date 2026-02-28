@@ -184,8 +184,8 @@ def full_concordance(in_file: str, stop_words_file: str, out_file: str) -> None:
 
             line_nums.sort()
             
-            line_str = " ".join(map(str, line_nums))
-            f.write(f"{key}: {line_str}")
+            line_nums_str = " ".join([str(num) for num in line_nums])
+            f.write(f"{key}: {line_nums_str}")
             
             if i < len(sorted_keys) - 1:
                 f.write("\n")
