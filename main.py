@@ -164,32 +164,32 @@ def make_concordance(stop_words: HashTable, lines: List[str]) -> HashTable:
 def full_concordance(in_file: str, stop_words_file: str, out_file: str) -> None:
     stop_words_ht = make_hash(128)
     try:
-        with open(stop_words_file, 'r') as f:
+        with open(stop_words_file, 'r', encoding='utf-8-sig') as f:
             for line in f:
                 for word in line.lower().split():
-                    add(stop_words_ht, word, 0) 
+                    add(stop_words_ht, word, 0)
     except FileNotFoundError:
-        pass 
+        pass
 
-    with open(in_file, 'r') as f:
-        input_lines = f.readlines()
+    # Try UTF-8 first; fall back to Windows-1252 if needed
+    try:
+        with open(in_file, 'r', encoding='utf-8-sig') as f:
+            input_lines = f.readlines()
+    except UnicodeDecodeError:
+        with open(in_file, 'r', encoding='cp1252', errors='replace') as f:
+            input_lines = f.readlines()
 
     concordance = make_concordance(stop_words_ht, input_lines)
 
     sorted_keys = sorted(hash_keys(concordance))
 
-    with open(out_file, 'w') as f:
+    with open(out_file, 'w', encoding='utf-8') as f:
         for i, key in enumerate(sorted_keys):
             line_nums = lookup(concordance, key)
-
             line_nums.sort()
-            
-            line_nums_str = " ".join([str(num) for num in line_nums])
-            f.write(f"{key}: {line_nums_str}")
-            
+            f.write(f"{key}: {' '.join(str(n) for n in line_nums)}")
             if i < len(sorted_keys) - 1:
                 f.write("\n")
-
 class Tests(unittest.TestCase):
     def test_hash_fn(self):
         self.assertEqual(hash_fn("abc"), (ord('a')*31**2 + ord('b')*31**1 + ord('c')))
